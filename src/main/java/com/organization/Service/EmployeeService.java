@@ -183,7 +183,7 @@ public class EmployeeService {
                 return new ResponseEntity("Manager Id Cannot Be Empty",HttpStatus.BAD_REQUEST);
             }
             employeeRepository.save(employeeDetails);
-            return new ResponseEntity("Employee Details Changed",HttpStatus.OK);
+            return new ResponseEntity("Employee Details Changed without Replacement",HttpStatus.OK);
         }
         else                // Replacing the Old Employee with New Employee
             {
@@ -212,11 +212,11 @@ public class EmployeeService {
                       employeeRepository.save(subordinateList.get(i));
                   }
                   employeeRepository.deleteById(employeeDetails.getEmpId()); // Deleting the old Employee
-                  return new ResponseEntity(newEmployee.getEmpId(),HttpStatus.OK);
+                  return new ResponseEntity("New Employee Added With Replacement",HttpStatus.OK);
               }
               else
               {
-                  return new ResponseEntity(newLevelId,HttpStatus.BAD_REQUEST);
+                  return new ResponseEntity("Higher Level Id, So Employee Cannot Be Added",HttpStatus.BAD_REQUEST);
               }
 
         }
