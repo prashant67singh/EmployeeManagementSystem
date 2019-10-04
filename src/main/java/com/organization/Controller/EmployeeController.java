@@ -1,6 +1,7 @@
 package com.organization.Controller;
 
 import com.organization.Entity.Employee;
+import com.organization.Entity.EmployeePost;
 import com.organization.Repository.EmployeeRepository;
 import com.organization.Service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,10 @@ public class EmployeeController {
         @DeleteMapping("/rest/employees/{id}")
          public ResponseEntity deleteEmployeeById(@PathVariable("id")int id){
             return employeeService.deleteEmployeeById(id);
+        }
+
+        @PostMapping("/rest/employees")
+    public ResponseEntity addEmployee(@RequestBody EmployeePost employee){
+            return employeeService.addEmployee(employee);
         }
 }

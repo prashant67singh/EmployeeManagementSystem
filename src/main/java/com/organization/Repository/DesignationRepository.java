@@ -12,5 +12,5 @@ import java.util.List;
 public interface DesignationRepository extends CrudRepository<Designation, Integer> {
 
 
-
+    public Designation findByJobTitle(String jobTitle); // fetching Designation Details for POST REST API CALL
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 
 @Entity
-@Table
 public class Designation  {
 
     @Id
@@ -43,4 +42,5 @@ public class Designation  {
     public void setLevelId(Integer levelId) {
         this.levelId = levelId;
     }
-}
+
+    }

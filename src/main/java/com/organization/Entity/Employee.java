@@ -9,15 +9,19 @@ import javax.persistence.*;
 @Table
 public class Employee {
 
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer empId;
     private String empName;
+    @Transient
+    public String jobTitle;  // It is used for fetching of Designation details when provided with jobTitle in POST REST API CALL
     @OneToOne
     @JoinColumn
+    @JsonIgnore
     Designation designation;
     @Nullable
     private Integer managerId;
-
 
     public Integer getEmpId() {
         return empId;
@@ -50,4 +54,13 @@ public class Employee {
     public void setManagerId(@Nullable Integer managerId) {
         this.managerId = managerId;
     }
+
+    public String getJobTitle() {
+       return getDesignation().getJobTitle();
+    }
+
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
+    }
+
 }
