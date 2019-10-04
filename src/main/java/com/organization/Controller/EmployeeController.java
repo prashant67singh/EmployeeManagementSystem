@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class EmployeeController {
+public class  EmployeeController {
 
     @Autowired
     EmployeeService employeeService;
@@ -35,7 +35,12 @@ public class EmployeeController {
         }
 
         @PostMapping("/rest/employees")
-    public ResponseEntity addEmployee(@RequestBody EmployeePost employee){
+         public ResponseEntity addEmployee(@RequestBody EmployeePost employee){
             return employeeService.addEmployee(employee);
+        }
+
+        @PutMapping("/rest/employees")
+        public ResponseEntity updateEmployeeDetails(@RequestBody EmployeePost employee){
+            return employeeService.updateEmployeeDetails(employee);
         }
 }

@@ -124,32 +124,68 @@ public class EmployeeService {
 
 /* Method to add new employee */
     public ResponseEntity addEmployee(EmployeePost employee) {
-        Employee emp = new Employee();               // Creating New Employee Object
+        Employee emp = new Employee();                                 // Creating New Employee Object
         Designation designation = designationRepository.findByJobTitle(employee.getJobTitle()); // Fetching Details of Designation From JobTile
         emp.setEmpId(employee.getEmpId());
         emp.setManagerId(employee.getManagerId());
         emp.setEmpName(employee.getEmpName());
         emp.setDesignation(designation);
-        int newEmployeeLevelId=emp.getDesignation().getLevelId(); //Finding LevelId of New Employee to be Inserted
-        List<Employee> allEmployee =employeeRepository.findAll();
-        Employee parent= new Employee();
-        for(int i=0;i<allEmployee.size();i++)
-        {
-            if(allEmployee.get(i).getEmpId()==employee.getManagerId())
-            {
-                 parent =allEmployee.get(i);
+        int newEmployeeLevelId = emp.getDesignation().getLevelId();   //Finding LevelId of New Employee to be Inserted
+        List<Employee> allEmployee = employeeRepository.findAll();
+        Employee parent = new Employee();
+        for (int i = 0; i < allEmployee.size(); i++) {
+            if (allEmployee.get(i).getEmpId() == employee.getManagerId()) {
+                parent = allEmployee.get(i);
             }
         }
-        int parentLevelId= parent.getDesignation().getLevelId();  // Finding the LevelId of Manager Of New Employee
-        if(parentLevelId < newEmployeeLevelId)
-        {
-            employeeRepository.save(emp); //Saving new Employee details in Employee Repository
+        int parentLevelId = parent.getDesignation().getLevelId();  // Finding the LevelId of Manager Of New Employee
+        if (parentLevelId < newEmployeeLevelId) {
+            employeeRepository.save(emp);                         //Saving new Employee details in Employee Repository
             return new ResponseEntity("New Employee Added", HttpStatus.OK);
-        }
-        else
-        {
+        } else {
             return new ResponseEntity("New Employee Cannot Be Added", HttpStatus.FORBIDDEN);
         }
+    }
+
+    /* Method to Update an Employee Details*/
+    public ResponseEntity updateEmployeeDetails(EmployeePost employee)
+    {
+        Employee employeeDetails = new Employee();
+        List<Employee> employeeList= employeeRepository.findAll();
+        for(int i=0;i<employeeList.size();i++)
+        {
+         if(employeeList.get(i).getEmpId()== employee.getEmpId()){
+             employeeDetails=employeeList.get(i);                      // Getting Employee Details after getting EmpId Passed in json body
+         }
+        }
+        if(employee.getReplace()==false)
+        {
+            if(employee.getEmpName()!=null) {
+                employeeDetails.setEmpName(employee.getEmpName());
+            }
+            else
+            {
+                return new ResponseEntity("Employee Name Cannot Be Empty",HttpStatus.BAD_REQUEST);
+            }
+            if(employee.getJobTitle()!=null)
+            {
+                employeeDetails.setJobTitle(employee.getJobTitle());
+            }
+            else {
+                return new ResponseEntity("Job Title Cannot Be Empty",HttpStatus.BAD_REQUEST);
+            }
+            if (employee.getManagerId()!= null)
+            {
+                employeeDetails.setManagerId(employee.getManagerId());
+            }
+            else
+            {
+                return new ResponseEntity("Manager Id Cannot Be Empty",HttpStatus.BAD_REQUEST);
+            }
+            employeeRepository.save(employeeDetails);
+            return new ResponseEntity("Employee Details Changed",HttpStatus.OK);
+        }
+        return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 

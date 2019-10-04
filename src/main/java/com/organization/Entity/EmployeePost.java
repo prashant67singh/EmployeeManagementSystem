@@ -8,6 +8,7 @@ public class EmployeePost {
     public Designation designation;
     public Integer managerId;
     public String jobTitle;
+    public Boolean replace;
 
     public String getEmpName() {
         return empName;
@@ -47,5 +48,13 @@ public class EmployeePost {
 
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
+    }
+
+    public Boolean getReplace() {
+        return replace;
+    }
+
+    public void setReplace(Boolean replace) {
+        this.replace = replace;
     }
 }
