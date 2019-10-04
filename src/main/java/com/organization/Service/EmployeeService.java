@@ -158,7 +158,7 @@ public class EmployeeService {
              employeeDetails=employeeList.get(i);                      // Getting Employee Details after getting EmpId Passed in json body
          }
         }
-        if(employee.getReplace()==false)
+        if(employee.getReplace()==false) // Updating the Details of employee with given Changes
         {
             if(employee.getEmpName()!=null) {
                 employeeDetails.setEmpName(employee.getEmpName());
@@ -185,7 +185,41 @@ public class EmployeeService {
             employeeRepository.save(employeeDetails);
             return new ResponseEntity("Employee Details Changed",HttpStatus.OK);
         }
-        return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        else                // Replacing the Old Employee with New Employee
+            {
+              Employee newEmployee= new Employee();
+              Designation designation = designationRepository.findByJobTitle(employee.getJobTitle());
+              int oldLevelId=employeeDetails.getDesignation().getLevelId();
+              int newLevelId=designation.getLevelId();
+              if(newLevelId == oldLevelId)
+              {
+                  newEmployee.setEmpId(employeeList.size()+1);
+                  newEmployee.setEmpName(employee.getEmpName());
+                  newEmployee.setDesignation(designation);
+                  newEmployee.setManagerId(employeeDetails.getManagerId());
+                  employeeRepository.save(newEmployee);
+               // Conditions for changing the ManagerId of Subordinates
+                  List<Employee> subordinateList =new ArrayList<>();
+                  for(int i=0; i<employeeList.size();i++)
+                  {
+                      if(employeeList.get(i).getManagerId() == employeeDetails.getEmpId()){
+                          subordinateList.add(employeeList.get(i));
+                      }
+                  }
+                  for(int i=0;i<subordinateList.size();i++)
+                  {
+                      subordinateList.get(i).setManagerId(newEmployee.getEmpId());
+                      employeeRepository.save(subordinateList.get(i));
+                  }
+                  employeeRepository.deleteById(employeeDetails.getEmpId()); // Deleting the old Employee
+                  return new ResponseEntity(newEmployee.getEmpId(),HttpStatus.OK);
+              }
+              else
+              {
+                  return new ResponseEntity(newLevelId,HttpStatus.BAD_REQUEST);
+              }
+
+        }
     }
 }
 
