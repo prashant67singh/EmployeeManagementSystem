@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api")
 public class  EmployeeController {
 
-    @Autowired
+    @Autowired 
     EmployeeService employeeService;
 
         @GetMapping("/rest/employees")
