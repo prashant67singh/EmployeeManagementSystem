@@ -76,9 +76,9 @@ public class EmployeeService {
     public ResponseEntity deleteEmployeeById(int id)
     {
         Optional<Employee> employeeDetails= employeeRepository.findById(id);
-        if(employeeDetails.get().getEmpId()!= null)
+
+        if(employeeDetails.isPresent())
         {
-            System.out.println("ID FOUND");
             List<Employee> employeeList=employeeRepository.findAll();
             int c=0;
             for(int i=0;i<employeeList.size();i++)
@@ -118,7 +118,7 @@ public class EmployeeService {
             }
         }
         else {
-            return new ResponseEntity("No Value Found", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity("Id Not Found", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -130,6 +130,9 @@ public class EmployeeService {
         emp.setManagerId(employee.getManagerId());
         emp.setEmpName(employee.getEmpName());
         emp.setDesignation(designation);
+        if(employee.getManagerId()==null){
+            return new ResponseEntity("Manager Id Cannot be Null",HttpStatus.FORBIDDEN);
+        }
         int newEmployeeLevelId = emp.getDesignation().getLevelId();   //Finding LevelId of New Employee to be Inserted
         List<Employee> allEmployee = employeeRepository.findAll();
         Employee parent = new Employee();
@@ -142,7 +145,11 @@ public class EmployeeService {
         if (parentLevelId < newEmployeeLevelId) {
             employeeRepository.save(emp);                         //Saving new Employee details in Employee Repository
             return new ResponseEntity("New Employee Added", HttpStatus.OK);
-        } else {
+        } else if (newEmployeeLevelId == 1)
+        {
+            return new ResponseEntity("Director Already Exist",HttpStatus.BAD_REQUEST);
+        }
+        else {
             return new ResponseEntity("New Employee Cannot Be Added", HttpStatus.FORBIDDEN);
         }
     }
