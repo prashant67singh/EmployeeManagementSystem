@@ -126,13 +126,20 @@ public class EmployeeService {
     public ResponseEntity addEmployee(EmployeePost employee) {
         Employee emp = new Employee();                                 // Creating New Employee Object
         Designation designation = designationRepository.findByJobTitle(employee.getJobTitle()); // Fetching Details of Designation From JobTile
+        if(designation.getJobTitle().isEmpty())
+        {
+            return new ResponseEntity("Such Post Do Not Exit",HttpStatus.BAD_REQUEST);
+        }
+        if(employee.getManagerId() == null) {
+            return  new ResponseEntity("Manager Id Cannot Be Null",HttpStatus.BAD_REQUEST);
+        }
+        if(employee.getEmpName().isEmpty()){
+            return new ResponseEntity("Employee Name Cannot be Null",HttpStatus.BAD_REQUEST);
+        }
         emp.setEmpId(employee.getEmpId());
         emp.setManagerId(employee.getManagerId());
         emp.setEmpName(employee.getEmpName());
         emp.setDesignation(designation);
-        if(employee.getManagerId()==null){
-            return new ResponseEntity("Manager Id Cannot be Null",HttpStatus.FORBIDDEN);
-        }
         int newEmployeeLevelId = emp.getDesignation().getLevelId();   //Finding LevelId of New Employee to be Inserted
         List<Employee> allEmployee = employeeRepository.findAll();
         Employee parent = new Employee();
@@ -159,6 +166,10 @@ public class EmployeeService {
     {
         Employee employeeDetails = new Employee();
         List<Employee> employeeList= employeeRepository.findAll();
+        if(employee.getEmpId() == null)
+        {
+            return  new ResponseEntity("Employee Id Cannot Be null",HttpStatus.BAD_REQUEST);
+        }
         for(int i=0;i<employeeList.size();i++)
         {
          if(employeeList.get(i).getEmpId()== employee.getEmpId()){
@@ -192,7 +203,7 @@ public class EmployeeService {
             employeeRepository.save(employeeDetails);
             return new ResponseEntity("Employee Details Changed without Replacement",HttpStatus.OK);
         }
-        else                // Replacing the Old Employee with New Employee
+        else if(employee.getReplace() == true)                // Replacing the Old Employee with New Employee
             {
               Employee newEmployee= new Employee();
               Designation designation = designationRepository.findByJobTitle(employee.getJobTitle());
@@ -225,7 +236,9 @@ public class EmployeeService {
               {
                   return new ResponseEntity("Higher Level Id, So Employee Cannot Be Added",HttpStatus.BAD_REQUEST);
               }
-
+        }
+        else {
+        return new ResponseEntity("Bad Request",HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
