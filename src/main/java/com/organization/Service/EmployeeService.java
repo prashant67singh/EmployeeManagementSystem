@@ -21,55 +21,65 @@ public class EmployeeService {
     DesignationRepository designationRepository;
 
     /*Method to get all Employees in database*/
-    public List<Employee> getAllEmployee() {
+//    public List<Employee> getAllEmployee() {
+    public ResponseEntity getAllEmployee() {
         // Finding details of all Employee sorted by LevelId, EmployeeName
         List<Employee> employeeList=employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
-        return  employeeList;
+        if (employeeList.size() > 0){
+            return new ResponseEntity(employeeList,HttpStatus.OK);
+        }
+        else
+        {
+            return new ResponseEntity("Employee List Is Empty",HttpStatus.NOT_FOUND);
+        }
+
     }
 
     /*Method to get Details of employee  provided Employee Id. This Method returns details of Employee, His Manager details
     * ,his colleague details and also the details of Employee reporting to that particular Employee  */
-    public Map<String,List<Employee>> getEmployee(int id)
-    {
-        Map<String,List<Employee>> details = new LinkedHashMap<>();
-        Optional<Employee> employee = employeeRepository.findById(id); // Getting Employee Details
-        List<Employee> employeeDetails= new ArrayList<>();
-        employeeDetails.add(employee.get());
-        details.put("Employee:", employeeDetails);
-        if(employee.get().getManagerId()!=null)  // Checking for Valid ManagerId
-        {
-            Optional<Employee> managerDetails = employeeRepository.findById(employee.get().getManagerId()); // Getting Manager Details
-            List<Employee> managerValue = new ArrayList<>();
-            managerValue.add(managerDetails.get());
-            details.put("Manager:", managerValue);
-        }
-        List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
-        List<Employee> colleague = new ArrayList<>(); // Creating List to get Colleague details
-        for(int i=0;i<employeeList.size();i++)
-        {
-            // Condition to get Colleague details
-            if(employeeList.get(i).getManagerId()== employee.get().getManagerId() && employee.get().getEmpId() != employeeList.get(i).getEmpId())
+    public ResponseEntity getEmployee(int  id) {
+        if (id > 0) {
+            Map<String, List<Employee>> details = new LinkedHashMap<>();
+            Optional<Employee> employee = employeeRepository.findById(id); // Getting Employee Details
+            List<Employee> employeeDetails = new ArrayList<>();
+            employeeDetails.add(employee.get());
+            details.put("Employee:", employeeDetails);
+            if (employee.get().getManagerId() != null)  // Checking for Valid ManagerId
             {
-                colleague.add(employeeList.get(i));
+                Optional<Employee> managerDetails = employeeRepository.findById(employee.get().getManagerId()); // Getting Manager Details
+                List<Employee> managerValue = new ArrayList<>();
+                managerValue.add(managerDetails.get());
+                details.put("Manager:", managerValue);
             }
-        }
-        if(colleague.size()!=0)
-        {
-            details.put("Colleague ", colleague);
-        }
-        List<Employee> subordinate= new ArrayList<>(); // Creation of List to get Subordinate Details
-        for(int i=0;i<employeeList.size();i++)
-        {
-            if(employeeList.get(i).getManagerId()== employee.get().getEmpId()) // Condition for getting Subordinate details
+            List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
+            List<Employee> colleague = new ArrayList<>(); // Creating List to get Colleague details
+            for (int i = 0; i < employeeList.size(); i++) {
+                // Condition to get Colleague details
+                if (employeeList.get(i).getManagerId() == employee.get().getManagerId() && employee.get().getEmpId() != employeeList.get(i).getEmpId()) {
+                    colleague.add(employeeList.get(i));
+                }
+            }
+            if (colleague.size() != 0) //Checking the Number of Colleagues
             {
-                subordinate.add(employeeList.get(i));
+                details.put("Colleague ", colleague);
             }
+            List<Employee> subordinate = new ArrayList<>(); // Creation of List to get Subordinate Details
+            for (int i = 0; i < employeeList.size(); i++) {
+                if (employeeList.get(i).getManagerId() == employee.get().getEmpId()) // Condition for getting Subordinate details
+                {
+                    subordinate.add(employeeList.get(i));
+                }
+            }
+            if (subordinate.size() != 0)  // Checking the number of Subordinates
+            {
+                details.put("Reporting To:", subordinate);
+            }
+            return new ResponseEntity(details, HttpStatus.OK);
         }
-        if(subordinate.size()!=0)
+        else
         {
-            details.put("Reporting To:", subordinate);
+            return new ResponseEntity("Invalid Employee Id",HttpStatus.BAD_REQUEST);
         }
-        return details;
     }
 
 /*Method to delete an employee from table provided with employee id */
@@ -203,7 +213,7 @@ public class EmployeeService {
             employeeRepository.save(employeeDetails);
             return new ResponseEntity("Employee Details Changed without Replacement",HttpStatus.OK);
         }
-        else if(employee.getReplace() == true)                // Replacing the Old Employee with New Employee
+        else if (employee.getReplace() == true)              // Replacing the Old Employee with New Employee
             {
               Employee newEmployee= new Employee();
               Designation designation = designationRepository.findByJobTitle(employee.getJobTitle());
@@ -237,8 +247,9 @@ public class EmployeeService {
                   return new ResponseEntity("Higher Level Id, So Employee Cannot Be Added",HttpStatus.BAD_REQUEST);
               }
         }
-        else {
-        return new ResponseEntity("Bad Request",HttpStatus.INTERNAL_SERVER_ERROR);
+        else
+        {
+            return  new ResponseEntity(" Bad Request "+ employee,HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -16,12 +16,24 @@ public class Employee {
     private String empName;
     @Transient
     public String jobTitle;  // It is used for fetching of Designation details when provided with jobTitle in POST REST API CALL
+
+
     @OneToOne
     @JoinColumn
     @JsonIgnore
     Designation designation;
     @Nullable
     private Integer managerId;
+
+    public Employee(String empName, String jobTitle, @Nullable Integer managerId) {
+        this.empName = empName;
+        this.jobTitle = jobTitle;
+        this.managerId = managerId;
+    }
+
+    public Employee() {
+    }
+
 
     public Integer getEmpId() {
         return empId;

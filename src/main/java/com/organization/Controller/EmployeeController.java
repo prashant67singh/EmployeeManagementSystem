@@ -19,13 +19,12 @@ public class  EmployeeController {
     EmployeeService employeeService;
 
         @GetMapping("/rest/employees")
-        public List<Employee> getAllEmployee(){
-            List<Employee> employees=employeeService.getAllEmployee();
-            return employees;
+        public ResponseEntity getAllEmployee(){
+             return employeeService.getAllEmployee();
          }
 
         @GetMapping("/rest/employees/{id}")
-        public Map<String,List<Employee>> getEmployee(@PathVariable("id") int id){
+        public ResponseEntity getEmployee(@PathVariable("id") int id){
             return employeeService.getEmployee(id);
         }
 
