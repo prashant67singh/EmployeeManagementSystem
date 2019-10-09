@@ -13,7 +13,9 @@ import org.springframework.test.context.testng.AbstractTransactionalTestNGSpring
 import org.springframework.test.web.servlet.MockMvc;
 import org.testng.annotations.Test;
 
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,9 +48,9 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     // Test if getAllEmployee method returns  empty list
     @Test
     public void getAllEmployeeNullTest() throws  Exception{
+        employeeRepository.deleteAll();
         mockMvc.perform(get(path))
                 .andDo(print())
-                .andExpect(jsonPath("$").isEmpty())
                 .andExpect(status().isNotFound());
     }
 
@@ -62,7 +64,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
 
     //Test getEmployeeById and also check its Response status
     @Test
-    public void getEmployeeByIdTest() throws Exception {
+    public void testGetEmployeeById() throws Exception {
         mockMvc.perform(get(path+"/{id}",1))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -71,10 +73,60 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
 
     //Test getEmployee( int id) for if id is negative
     @Test
-    public void getEmployeeByIdForNegativeId() throws Exception{
+    public void testGetEmployeeByIdForInvalidEmployeeId() throws Exception{
         mockMvc.perform(get(path+"/{id}",-1))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
+    // Test getEmployee(Int Id) for Invalid empId
+    @Test
+    public void testGetEmployeeByForEmployeeIdNotPresent() throws Exception{
+        mockMvc.perform(get(path+"/{id}",20))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test deleteEmployeeById(int id) if id passed as argument is Valid or Not
+    @Test
+    public void testDeleteEmployeeByIdForInvalidNegativeEmployeeId() throws Exception{
+        mockMvc.perform(delete(path+"/{id}",-2))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test deleteEmployeeById(int id) if Employee Is not present for given Employee Email Id
+    @Test
+    public void testDeleteEmployeeByIdForEmployeeIdNotPresent() throws Exception{
+        mockMvc.perform(delete(path+"/{id}",20))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test deleteEmployeeById(int id) along with its Response Status
+    @Test
+    public void testDeleteEmployeeById() throws Exception{
+        mockMvc.perform(delete(path+"/{id}",10))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    //Test deleteEmployeeById(int id) for deleting Director with multiple Subordinates
+    @Test
+    public void TestForDeletingDirectorWithSubordinates() throws Exception{
+        mockMvc.perform(delete(path+"/{id}",1))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    //Test deleteEmployeeById(int id) for deleting Director without  any Subordinates
+    @Test
+    public void TestForDeletingDirectorWithoutSubordinates() throws Exception{
+        for (int i=2;i<=10;i++){
+            employeeRepository.deleteById(i);
+        }
+        mockMvc.perform(delete(path+"/{id}",1))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
 }

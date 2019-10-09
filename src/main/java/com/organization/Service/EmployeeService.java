@@ -21,16 +21,15 @@ public class EmployeeService {
     DesignationRepository designationRepository;
 
     /*Method to get all Employees in database*/
-//    public List<Employee> getAllEmployee() {
-    public ResponseEntity getAllEmployee() {
-        // Finding details of all Employee sorted by LevelId, EmployeeName
-        List<Employee> employeeList=employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
+    public ResponseEntity getAllEmployee()
+    {
+        List<Employee> employeeList=employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc(); // Finding details of all Employee sorted by LevelId, EmployeeName
         if (employeeList.size() > 0){
-            return new ResponseEntity(employeeList,HttpStatus.OK);
+            return new ResponseEntity(employeeList,HttpStatus.OK);  // Returning Non Empty List
         }
         else
         {
-            return new ResponseEntity("Employee List Is Empty",HttpStatus.NOT_FOUND);
+            return new ResponseEntity("No Employee Found",HttpStatus.NOT_FOUND);  // Returning Error Message For Empty List
         }
 
     }
@@ -38,97 +37,104 @@ public class EmployeeService {
     /*Method to get Details of employee  provided Employee Id. This Method returns details of Employee, His Manager details
     * ,his colleague details and also the details of Employee reporting to that particular Employee  */
     public ResponseEntity getEmployee(int  id) {
-        if (id > 0) {
+        if (id > 0)  // Checking if Id is positive or not
+        {
             Map<String, List<Employee>> details = new LinkedHashMap<>();
             Optional<Employee> employee = employeeRepository.findById(id); // Getting Employee Details
-            List<Employee> employeeDetails = new ArrayList<>();
-            employeeDetails.add(employee.get());
-            details.put("Employee:", employeeDetails);
-            if (employee.get().getManagerId() != null)  // Checking for Valid ManagerId
+            if(employee.isPresent())
             {
-                Optional<Employee> managerDetails = employeeRepository.findById(employee.get().getManagerId()); // Getting Manager Details
-                List<Employee> managerValue = new ArrayList<>();
-                managerValue.add(managerDetails.get());
-                details.put("Manager:", managerValue);
-            }
-            List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
-            List<Employee> colleague = new ArrayList<>(); // Creating List to get Colleague details
-            for (int i = 0; i < employeeList.size(); i++) {
-                // Condition to get Colleague details
-                if (employeeList.get(i).getManagerId() == employee.get().getManagerId() && employee.get().getEmpId() != employeeList.get(i).getEmpId()) {
-                    colleague.add(employeeList.get(i));
-                }
-            }
-            if (colleague.size() != 0) //Checking the Number of Colleagues
-            {
-                details.put("Colleague ", colleague);
-            }
-            List<Employee> subordinate = new ArrayList<>(); // Creation of List to get Subordinate Details
-            for (int i = 0; i < employeeList.size(); i++) {
-                if (employeeList.get(i).getManagerId() == employee.get().getEmpId()) // Condition for getting Subordinate details
+                List<Employee> employeeDetails = new ArrayList<>();
+                employeeDetails.add(employee.get());
+                details.put("Employee:", employeeDetails);
+                if (employee.get().getManagerId() != null)  // Checking for Valid ManagerId
                 {
-                    subordinate.add(employeeList.get(i));
+                    Optional<Employee> managerDetails = employeeRepository.findById(employee.get().getManagerId()); // Getting Manager Details
+                    List<Employee> managerValue = new ArrayList<>();
+                    managerValue.add(managerDetails.get());
+                    details.put("Manager:", managerValue);
                 }
+                List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
+                List<Employee> colleague = new ArrayList<>(); // Creating List to get Colleague details
+                for (int i = 0; i < employeeList.size(); i++) {
+                    // Condition to get Colleague details
+                    if (employeeList.get(i).getManagerId() == employee.get().getManagerId() && employee.get().getEmpId() != employeeList.get(i).getEmpId()) {
+                        colleague.add(employeeList.get(i));
+                    }
+                }
+                if (colleague.size() != 0) //Checking the Number of Colleagues
+                {
+                    details.put("Colleague ", colleague);
+                }
+                List<Employee> subordinate = new ArrayList<>(); // Creation of List to get Subordinate Details
+                for (int i = 0; i < employeeList.size(); i++) {
+                    if (employeeList.get(i).getManagerId() == employee.get().getEmpId()) // Condition for getting Subordinate details
+                    {
+                        subordinate.add(employeeList.get(i));
+                    }
+                }
+                if (subordinate.size() != 0)  // Checking the number of Subordinates
+                {
+                    details.put("Reporting To:", subordinate);
+                }
+                return new ResponseEntity(details, HttpStatus.OK); // Returning Employee Details for Valid Employee Id
             }
-            if (subordinate.size() != 0)  // Checking the number of Subordinates
+            else
             {
-                details.put("Reporting To:", subordinate);
+                return new ResponseEntity("Given Employee Id Is Not Present",HttpStatus.BAD_REQUEST);
             }
-            return new ResponseEntity(details, HttpStatus.OK);
+
         }
         else
         {
-            return new ResponseEntity("Invalid Employee Id",HttpStatus.BAD_REQUEST);
+            return new ResponseEntity("Invalid Employee Id",HttpStatus.BAD_REQUEST); // Error Message With Http Response Msg for Invalid Employee Id
         }
     }
 
 /*Method to delete an employee from table provided with employee id */
     public ResponseEntity deleteEmployeeById(int id)
     {
-        Optional<Employee> employeeDetails= employeeRepository.findById(id);
-
-        if(employeeDetails.isPresent())
-        {
-            List<Employee> employeeList=employeeRepository.findAll();
-            int c=0;
-            for(int i=0;i<employeeList.size();i++)
-            {
-                if (employeeList.get(i).getManagerId() == employeeDetails.get().getEmpId()) // Counting Number of Subordinates
-                 {
-                    c=c+1;
-                }
-            }
-            if(employeeDetails.get().getEmpId()==1 & c>=1) // More then One Subordinate exits so can't be deleted
-            {
-                return new ResponseEntity("Cannot Be Deleted",HttpStatus.BAD_REQUEST);
-            }
-            else if(employeeDetails.get().getEmpId() == 1 && c ==0)  //Director with no Subordinate so it can be deleted
-            {
-                employeeRepository.deleteById(id);
-                return new ResponseEntity("Successfully Deleted",HttpStatus.OK);
-            }
-            else if(employeeDetails.get().getEmpId()!=1 && c==0) // Employee with no subordinates can be deleted
-            {
-                employeeRepository.deleteById(id);
-                return new ResponseEntity("Successfully Deleted",HttpStatus.OK);
-            }
-            else  //Employee with multiple Subordinates can be deleted, ManagerId of Subordinate changes
-                {
-                int j=employeeDetails.get().getManagerId();
-                for(int i=0;i<employeeList.size();i++)
-                {
-                    if(employeeList.get(i).getManagerId() == employeeDetails.get().getEmpId()) // changing ManagerId of Subordinate
+        if(id>0) {
+            Optional<Employee> employeeDetails = employeeRepository.findById(id);
+            if (employeeDetails.isPresent()) {
+                List<Employee> employeeList = employeeRepository.findAll();
+                int c = 0;
+                for (int i = 0; i < employeeList.size(); i++) {
+                    if (employeeList.get(i).getManagerId() == employeeDetails.get().getEmpId()) // Counting Number of Subordinates
                     {
-                        employeeList.get(i).setManagerId(j);
-                        employeeRepository.save(employeeList.get(i));
+                        c = c + 1;
                     }
                 }
-                employeeRepository.deleteById(id);
-                return new ResponseEntity("Parent Changed and Details Successfully Deleted",HttpStatus.OK);
+                if (employeeDetails.get().getEmpId() == 1 & c >= 1) // More then One Subordinate exits so can't be deleted
+                {
+                    return new ResponseEntity("Director With Multiple Subordinates Cannot Be Deleted", HttpStatus.BAD_REQUEST);
+                } else if (employeeDetails.get().getEmpId() == 1 && c == 0)  //Director with no Subordinate so it can be deleted
+                {
+                    employeeRepository.deleteById(id);
+                    return new ResponseEntity("Successfully Deleted", HttpStatus.OK);
+                } else if (employeeDetails.get().getEmpId() != 1 && c == 0) // Employee with no subordinates can be deleted
+                {
+                    employeeRepository.deleteById(id);
+                    return new ResponseEntity("Successfully Deleted", HttpStatus.OK);
+                } else  //Employee with multiple Subordinates can be deleted, ManagerId of Subordinate changes
+                {
+                    int j = employeeDetails.get().getManagerId();
+                    for (int i = 0; i < employeeList.size(); i++) {
+                        if (employeeList.get(i).getManagerId() == employeeDetails.get().getEmpId()) // changing ManagerId of Subordinate
+                        {
+                            employeeList.get(i).setManagerId(j);
+                            employeeRepository.save(employeeList.get(i));
+                        }
+                    }
+                    employeeRepository.deleteById(id);
+                    return new ResponseEntity("Parent Changed and Details Successfully Deleted", HttpStatus.OK);
+                }
+            } else {
+                return new ResponseEntity("Id Not Found", HttpStatus.BAD_REQUEST);
             }
         }
-        else {
-            return new ResponseEntity("Id Not Found", HttpStatus.BAD_REQUEST);
+        else
+        {
+            return new ResponseEntity("Invalid Employee Id",HttpStatus.BAD_REQUEST);
         }
     }
 
