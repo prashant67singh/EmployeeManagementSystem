@@ -103,10 +103,18 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .andExpect(status().isBadRequest());
     }
 
-    // Test deleteEmployeeById(int id) along with its Response Status
+    // Test deleteEmployeeById(int id) along with its Response Status for Employee with no subordinates
     @Test
-    public void testDeleteEmployeeById() throws Exception{
+    public void testDeleteEmployeeByIdWithNoSubordinates() throws Exception{
         mockMvc.perform(delete(path+"/{id}",10))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    // Test deleteEmployeeById(int id) along with its Response Status for Employee with multiple subordinates
+    @Test
+    public void testDeleteEmployeeByIdWithSubordinates() throws Exception{
+        mockMvc.perform(delete(path+"/{id}",3))
                 .andDo(print())
                 .andExpect(status().isOk());
     }

@@ -110,11 +110,11 @@ public class EmployeeService {
                 } else if (employeeDetails.get().getEmpId() == 1 && c == 0)  //Director with no Subordinate so it can be deleted
                 {
                     employeeRepository.deleteById(id);
-                    return new ResponseEntity("Successfully Deleted", HttpStatus.OK);
+                    return new ResponseEntity("Director With No Subordinates Successfully Deleted", HttpStatus.OK);
                 } else if (employeeDetails.get().getEmpId() != 1 && c == 0) // Employee with no subordinates can be deleted
                 {
                     employeeRepository.deleteById(id);
-                    return new ResponseEntity("Successfully Deleted", HttpStatus.OK);
+                    return new ResponseEntity(" Employee With No Subordinates Successfully Deleted", HttpStatus.OK);
                 } else  //Employee with multiple Subordinates can be deleted, ManagerId of Subordinate changes
                 {
                     int j = employeeDetails.get().getManagerId();
@@ -126,7 +126,7 @@ public class EmployeeService {
                         }
                     }
                     employeeRepository.deleteById(id);
-                    return new ResponseEntity("Parent Changed and Details Successfully Deleted", HttpStatus.OK);
+                    return new ResponseEntity("Employee Is Successfully Deleted And Parent Details of His Subordinates Successfully Changed", HttpStatus.OK);
                 }
             } else {
                 return new ResponseEntity("Id Not Found", HttpStatus.BAD_REQUEST);
@@ -141,39 +141,50 @@ public class EmployeeService {
 /* Method to add new employee */
     public ResponseEntity addEmployee(EmployeePost employee) {
         Employee emp = new Employee();                                 // Creating New Employee Object
+        if (employee.getJobTitle() == null){
+            return new ResponseEntity("JobTitle Cannot be Null",HttpStatus.BAD_REQUEST);
+        }
+        if(employee.getEmpName() == null){
+            return new ResponseEntity("New Employee Name Cannot be Null",HttpStatus.BAD_REQUEST);
+        }
         Designation designation = designationRepository.findByJobTitle(employee.getJobTitle()); // Fetching Details of Designation From JobTile
-        if(designation.getJobTitle().isEmpty())
-        {
-            return new ResponseEntity("Such Post Do Not Exit",HttpStatus.BAD_REQUEST);
+        if (designation.getJobTitle().isEmpty()) {                     // checking if JobTitle is passed in Json Body
+            return new ResponseEntity("No Such Designation Exit For The Given JobTitle", HttpStatus.BAD_REQUEST);
         }
-        if(employee.getManagerId() == null) {
-            return  new ResponseEntity("Manager Id Cannot Be Null",HttpStatus.BAD_REQUEST);
+        if (employee.getEmpName().isEmpty()) {                         // checking if Employee Name is passed in Json Body
+            return new ResponseEntity("Employee Name Cannot be Null", HttpStatus.BAD_REQUEST);
         }
-        if(employee.getEmpName().isEmpty()){
-            return new ResponseEntity("Employee Name Cannot be Null",HttpStatus.BAD_REQUEST);
-        }
-        emp.setEmpId(employee.getEmpId());
-        emp.setManagerId(employee.getManagerId());
-        emp.setEmpName(employee.getEmpName());
-        emp.setDesignation(designation);
-        int newEmployeeLevelId = emp.getDesignation().getLevelId();   //Finding LevelId of New Employee to be Inserted
-        List<Employee> allEmployee = employeeRepository.findAll();
-        Employee parent = new Employee();
-        for (int i = 0; i < allEmployee.size(); i++) {
-            if (allEmployee.get(i).getEmpId() == employee.getManagerId()) {
-                parent = allEmployee.get(i);
+        emp.setEmpId(employee.getEmpId()); // Setting Employee Id
+        emp.setEmpName(employee.getEmpName());  // Setting Employee Name
+        emp.setDesignation(designation); // Setting Employee Designation Details
+        if(employeeRepository.findAll().size()!=0) {
+            if (employee.getManagerId() == null) {   // if There is director then new Employee Manager Id cannot be Null
+                return new ResponseEntity("Manager Id Cannot Be Null", HttpStatus.BAD_REQUEST);
+            }
+            emp.setManagerId(employee.getManagerId());
+            int newEmployeeLevelId = emp.getDesignation().getLevelId();   //Finding LevelId of New Employee to be Inserted
+            List<Employee> allEmployee = employeeRepository.findAll();
+            Employee parent = new Employee();
+            for (int i = 0; i < allEmployee.size(); i++) {
+                if (allEmployee.get(i).getEmpId() == employee.getManagerId()) {
+                    parent = allEmployee.get(i);
+                }
+            }
+            int parentLevelId = parent.getDesignation().getLevelId();  // Finding the LevelId of Manager Of New Employee
+            if (parentLevelId < newEmployeeLevelId) {
+                employeeRepository.save(emp);                         //Saving new Employee details in Employee Repository
+                return new ResponseEntity("New Employee Added", HttpStatus.OK);
+            } else if (newEmployeeLevelId == 1) {
+                return new ResponseEntity("Director Already Exist", HttpStatus.BAD_REQUEST);
+            } else {
+                return new ResponseEntity("New Employee Cannot Be Added", HttpStatus.FORBIDDEN);
             }
         }
-        int parentLevelId = parent.getDesignation().getLevelId();  // Finding the LevelId of Manager Of New Employee
-        if (parentLevelId < newEmployeeLevelId) {
-            employeeRepository.save(emp);                         //Saving new Employee details in Employee Repository
-            return new ResponseEntity("New Employee Added", HttpStatus.OK);
-        } else if (newEmployeeLevelId == 1)
+        else
         {
-            return new ResponseEntity("Director Already Exist",HttpStatus.BAD_REQUEST);
-        }
-        else {
-            return new ResponseEntity("New Employee Cannot Be Added", HttpStatus.FORBIDDEN);
+                emp.setManagerId(null);                       // Manager Id In Case Of Very First employee can be null
+                employeeRepository.save(emp);                 // Saving The Employee Details in Repository
+                return new ResponseEntity("Very First Employee In EMS is Added",HttpStatus.OK);
         }
     }
 
