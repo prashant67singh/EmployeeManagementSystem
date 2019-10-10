@@ -1,6 +1,11 @@
 package com.organization;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.organization.Controller.EmployeeController;
+import com.organization.Entity.Employee;
+import com.organization.Entity.EmployeePost;
 import com.organization.Repository.EmployeeRepository;
 import javafx.application.Application;
 import jdk.net.SocketFlow;
@@ -11,16 +16,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.testng.annotations.Test;
+import org.springframework.http.MediaType;
 
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
+import springfox.documentation.spring.web.json.Json;
 
 import java.awt.*;
 
@@ -137,4 +147,229 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .andDo(print())
                 .andExpect(status().isOk());
     }
+    //Test addEmployee() for correct Json Body
+    @Test
+    public void TestForAddEmployee() throws Exception{
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+        employee.setManagerId(1);
+        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    // Test addEmployee() for null Manager Id
+    @Test
+    public void TestForAddEmployeeForNullManagerId() throws Exception{
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+//        employee.setManagerId(1);
+        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test addEmployee() for null Employee Name
+    @Test
+    public void TestForAddEmployeeForNullEmployeeName() throws Exception{
+        EmployeePost employee =new EmployeePost();
+//        employee.setEmpName("Prashant");
+        employee.setManagerId(1);
+        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test addEmployee() for null Employee JobTitle
+    @Test
+    public void TestForAddEmployeeForNullJobTile() throws Exception{
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+        employee.setManagerId(1);
+//        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test addEmployee() , if Designation is assigned is not present in the  Designation Table
+    @Test
+    public void TestForAddEmployeeForInValidDesignation() throws Exception{
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+        employee.setManagerId(1);
+       employee.setJobTitle("manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    // Test addEmployee() , Another Director is Added if One Director already Exist
+    @Test
+    public void TestForAddEmployeeForAddingAnotherDirector() throws Exception{
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+        employee.setManagerId(2);
+        employee.setJobTitle("Director");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test addEmployee() , Adding of Employee with Higher Or Same level Id as of his Manager
+    @Test
+    public void TestForAddEmployeeForAddingEmployeeWithHigherOrEqualDesgnLevel() throws Exception{
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+        employee.setManagerId(2);
+        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    // Test addEmployee() , Adding first Employee in EMS with Null ManagerId
+    @Test
+    public void TestForAddEmployeeForAddingFirstEmployeeWithNullManagerId() throws Exception{
+        employeeRepository.deleteAll();
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+      //  employee.setManagerId(2);
+        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    // Test addEmployee() , Adding first Employee in EMS with Some ManagerId
+    @Test
+    public void TestForAddEmployeeForAddingFirstEmployeeWithManagerId() throws Exception{
+        employeeRepository.deleteAll();
+        EmployeePost employee =new EmployeePost();
+        employee.setEmpName("Prashant");
+        employee.setManagerId(2);
+        employee.setJobTitle("Manager");
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployee() for checking validity of Employee Id Passed
+    @Test
+    public  void testUpadtEmployeeForValidEmployeeId() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(-2);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    // Test updateEmployee() for checking Employee Id Passed is Null
+    @Test
+    public  void testUpadtEmployeeForNullEmployeeId() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        // employee.setEmpId(2);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployee() for checking of Employee Id Passed is present in Table
+    @Test
+    public  void testUpadteEmployeeForEmployeeIdNotPresent() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(12);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+
 }

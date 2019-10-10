@@ -8,7 +8,19 @@ public class EmployeePost {
     public Designation designation;
     public Integer managerId;
     public String jobTitle;
+
+    public EmployeePost(String empName, Integer managerId, String jobTitle, Boolean replace) {
+        this.empName = empName;
+        this.managerId = managerId;
+        this.jobTitle = jobTitle;
+        this.replace = replace;
+    }
+
     public Boolean replace;
+
+    public EmployeePost() {
+
+    }
 
     public String getEmpName() {
         return empName;
