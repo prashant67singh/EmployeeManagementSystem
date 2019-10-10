@@ -282,7 +282,7 @@ public class EmployeeService {
                 }
                 else
                     {
-                    return new ResponseEntity("Employee Cannot Have Same or Lower Designation As His/Her New manager",HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity("Employee Cannot Have Same or Higher Designation As His/Her New manager",HttpStatus.BAD_REQUEST);
                     }
             }
             else
@@ -296,6 +296,21 @@ public class EmployeeService {
             {
               Employee newEmployee= new Employee();
               Designation designation = designationRepository.findByJobTitle(employee.getJobTitle());
+              if(designation==null)
+              {
+                  return new ResponseEntity("JobTitle Cannot be Null",HttpStatus.BAD_REQUEST);
+              }
+              if(employee.getEmpId()< 0 || employee.getEmpId() == null)
+              {
+                  return new ResponseEntity("Employee To be Replaced Cannot be Null or Negative",HttpStatus.BAD_REQUEST);
+              }
+              if(employeeDetails.getEmpId() == null)
+              {
+                    return new ResponseEntity("Employee Details Not Present For Given Employee Id",HttpStatus.BAD_REQUEST);
+              }
+              if(employee.getEmpName()==null){
+                  return new ResponseEntity("Employee Name Cannot Be Null",HttpStatus.BAD_REQUEST);
+              }
               int oldLevelId=employeeDetails.getDesignation().getLevelId();
               int newLevelId=designation.getLevelId();
               if(newLevelId == oldLevelId)
@@ -323,7 +338,7 @@ public class EmployeeService {
               }
               else
               {
-                  return new ResponseEntity("Higher Level Id, So Employee Cannot Be Added",HttpStatus.BAD_REQUEST);
+                  return new ResponseEntity("Designation Not Same, So Employee Cannot Be Added",HttpStatus.BAD_REQUEST);
               }
         }
         else

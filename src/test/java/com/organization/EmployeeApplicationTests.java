@@ -309,9 +309,9 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .andExpect(status().isBadRequest());
     }
 
-    // Test updateEmployee() for checking validity of Employee Id Passed
+    // Test updateEmployeeDetails() for checking validity of Employee Id Passed
     @Test
-    public  void testUpadtEmployeeForValidEmployeeId() throws Exception{
+    public  void testUpdateEmployeeDetailsForValidEmployeeId() throws Exception{
         EmployeePost employee = new EmployeePost();
         employee.setEmpId(-2);
         employee.setEmpName("Prashant Singh");
@@ -330,9 +330,9 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     }
 
 
-    // Test updateEmployee() for checking Employee Id Passed is Null
+    // Test updateEmployeeDetails() for checking Employee Id Passed is Null
     @Test
-    public  void testUpadtEmployeeForNullEmployeeId() throws Exception{
+    public  void testUpdateEmployeeDetailsForNullEmployeeId() throws Exception{
         EmployeePost employee = new EmployeePost();
         // employee.setEmpId(2);
         employee.setEmpName("Prashant Singh");
@@ -350,9 +350,9 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .andExpect(status().isBadRequest());
     }
 
-    // Test updateEmployee() for checking of Employee Id Passed is present in Table
+    // Test updateEmployeeDetails() for checking of Employee Id Passed is present in Table
     @Test
-    public  void testUpadteEmployeeForEmployeeIdNotPresent() throws Exception{
+    public  void testUpdateEmployeeDetailsForEmployeeIdNotPresent() throws Exception{
         EmployeePost employee = new EmployeePost();
         employee.setEmpId(12);
         employee.setEmpName("Prashant Singh");
@@ -369,6 +369,212 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
+    // Test updateEmployeeDetails() for Replace=false
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceFalse() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(9);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("DevOps");
+        employee.setManagerId(4);
+        employee.setReplace(false);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    // Test updateEmployeeDetails() for Replace=false and Invalid Job Title
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceFalseInvalidJobTitle() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(5);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Developers");
+        //employee.setManagerId(4);
+        employee.setReplace(false);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployeeDetails() for Replace=false and Designation Is Higher Then His Manager Designation or New Designation Is Lower Then His Current Designation
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceFalseJobTitleHighOrLow() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(5);
+        //employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        //employee.setManagerId(4);
+        employee.setReplace(false);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    // Test updateEmployeeDetails() for Replace=false and Invalid Manager Id
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceFalseInvalidManagerId() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(5);
+        //employee.setEmpName("Prashant Singh");
+        // employee.setJobTitle("Manager");
+        employee.setManagerId(20);
+        employee.setReplace(false);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployeeDetails() for Replace=false and New Manager Id cannot be Assigned
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceFalseManagerIdWithSameOrLowerDesignation() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(5);
+        //employee.setEmpName("Prashant Singh");
+        // employee.setJobTitle("Manager");
+        employee.setManagerId(6);
+        employee.setReplace(false);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    // Test updateEmployeeDetails() for Replace=true and also test response status
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceTrue() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(2);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+
+    // Test updateEmployeeDetails() for Replace=true and Employee name = Null
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceTrueEmpNameNull() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(2);
+       // employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployeeDetails() for Replace=true and JobTitle = Null
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceTrueJobTitleNull() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        employee.setEmpId(2);
+        employee.setEmpName("Prashant Singh");
+       // employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployeeDetails() for Replace=true and Employee Id = Null
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceTrueEmpIdNull() throws Exception{
+        EmployeePost employee = new EmployeePost();
+        //employee.setEmpId(2);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Manager");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test updateEmployeeDetails() for Replace=true and Designation is either Higher or Lower
+    @Test
+    public  void testUpdateEmployeeDetailsForReplaceTrueDesignationHighLow() throws Exception{
+        EmployeePost employee = new EmployeePost();
+       employee.setEmpId(2);
+        employee.setEmpName("Prashant Singh");
+        employee.setJobTitle("Developer");
+        employee.setManagerId(1);
+        employee.setReplace(true);
+        ObjectMapper objectMapper =new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
+        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
+        String requestJson=objectWriter.writeValueAsString(employee);
+        mockMvc.perform(put(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+
+
+
+
 
 
 
