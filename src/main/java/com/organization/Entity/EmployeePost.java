@@ -27,7 +27,7 @@ public class EmployeePost {
     }
 
     public void setEmpName(String empName) {
-        this.empName = empName;
+        this.empName = empName.toUpperCase();
     }
 
     public Integer getEmpId() {
@@ -58,9 +58,7 @@ public class EmployeePost {
         return jobTitle;
     }
 
-    public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
-    }
+    public void setJobTitle(String jobTitle) {  this.jobTitle = jobTitle.toUpperCase();    }
 
     public Boolean getReplace() {
         return replace;

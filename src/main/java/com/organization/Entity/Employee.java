@@ -48,7 +48,7 @@ public class Employee {
     }
 
     public void setEmpName(String empName) {
-        this.empName = empName;
+        this.empName = empName.toUpperCase();
     }
 
     public Designation getDesignation() {
@@ -72,7 +72,7 @@ public class Employee {
     }
 
     public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
+        this.jobTitle = jobTitle.toUpperCase();
     }
 
 }
