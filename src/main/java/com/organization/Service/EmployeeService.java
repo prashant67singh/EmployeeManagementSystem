@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Service
@@ -39,25 +40,23 @@ public class EmployeeService {
     public ResponseEntity getEmployee(int  id) {
         if (id > 0)  // Checking if Id is positive or not
         {
-            Map<String, List<Employee>> details = new LinkedHashMap<>();
-            Optional<Employee> employee = employeeRepository.findById(id); // Getting Employee Details
-            if(employee.isPresent())
+            Map<String, Object> details = new LinkedHashMap<>();
+            Optional<Employee> employeeTemp = employeeRepository.findById(id); // Getting Employee Details
+            if(employeeTemp.isPresent())
             {
-                List<Employee> employeeDetails = new ArrayList<>();
-                employeeDetails.add(employee.get());
-                details.put("Employee:", employeeDetails);
-                if (employee.get().getManagerId() != null)  // Checking for Valid ManagerId
+                Employee employee = employeeTemp.get();
+                details.put("Employee:", employee);
+                if (employee.getManagerId() != null)  // Checking for Valid ManagerId
                 {
-                    Optional<Employee> managerDetails = employeeRepository.findById(employee.get().getManagerId()); // Getting Manager Details
-                    List<Employee> managerValue = new ArrayList<>();
-                    managerValue.add(managerDetails.get());
+                    Optional<Employee> managerDetails = employeeRepository.findById(employee.getManagerId()); // Getting Manager Details
+                    Employee managerValue =managerDetails.get();
                     details.put("Manager:", managerValue);
                 }
                 List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
                 List<Employee> colleague = new ArrayList<>(); // Creating List to get Colleague details
                 for (int i = 0; i < employeeList.size(); i++) {
                     // Condition to get Colleague details
-                    if (employeeList.get(i).getManagerId() == employee.get().getManagerId() && employee.get().getEmpId() != employeeList.get(i).getEmpId()) {
+                    if (employeeList.get(i).getManagerId() == employee.getManagerId() && employee.getEmpId() != employeeList.get(i).getEmpId()) {
                         colleague.add(employeeList.get(i));
                     }
                 }
@@ -67,14 +66,14 @@ public class EmployeeService {
                 }
                 List<Employee> subordinate = new ArrayList<>(); // Creation of List to get Subordinate Details
                 for (int i = 0; i < employeeList.size(); i++) {
-                    if (employeeList.get(i).getManagerId() == employee.get().getEmpId()) // Condition for getting Subordinate details
+                    if (employeeList.get(i).getManagerId() == employee.getEmpId()) // Condition for getting Subordinate details
                     {
                         subordinate.add(employeeList.get(i));
                     }
                 }
                 if (subordinate.size() != 0)  // Checking the number of Subordinates
                 {
-                    details.put("Reporting To:", subordinate);
+                    details.put("Subordinates:", subordinate);
                 }
                 return new ResponseEntity(details, HttpStatus.OK); // Returning Employee Details for Valid Employee Id
             }

@@ -51,8 +51,8 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         mockMvc.perform(get(path))
                 .andDo(print())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].empName").value("Thor"))
-                .andExpect(jsonPath("$[0].jobTitle").value("Director"));
+                .andExpect(jsonPath("$[0].empName").value("THOR"))
+                .andExpect(jsonPath("$[0].jobTitle").value("DIRECTOR"));
     }
 
     // Test if getAllEmployee method returns  empty list
@@ -225,7 +225,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         EmployeePost employee =new EmployeePost();
         employee.setEmpName("Prashant");
         employee.setManagerId(1);
-       employee.setJobTitle("manager");
+       employee.setJobTitle("Supervisor");
         ObjectMapper objectMapper =new ObjectMapper();
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
