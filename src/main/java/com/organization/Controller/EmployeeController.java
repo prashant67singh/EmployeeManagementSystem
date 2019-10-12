@@ -18,28 +18,28 @@ public class  EmployeeController {
     @Autowired
     EmployeeService employeeService;
 
-        @GetMapping("/rest/employees")
+        @GetMapping("/employees")
         public ResponseEntity getAllEmployee(){
              return employeeService.getAllEmployee();
          }
 
-        @GetMapping("/rest/employees/{id}")
+        @GetMapping("/employees/{id}")
         public ResponseEntity getEmployee(@PathVariable("id") int id){
             return employeeService.getEmployee(id);
         }
 
-        @DeleteMapping("/rest/employees/{id}")
+        @DeleteMapping("/employees/{id}")
          public ResponseEntity deleteEmployeeById(@PathVariable("id")int id){
             return employeeService.deleteEmployeeById(id);
         }
 
-        @PostMapping("/rest/employees")
+        @PostMapping("/employees")
          public ResponseEntity addEmployee(@RequestBody EmployeePost employee){
             return employeeService.addEmployee(employee);
         }
 
-        @PutMapping("/rest/employees")
-        public ResponseEntity updateEmployeeDetails(@RequestBody EmployeePost employee){
-            return employeeService.updateEmployeeDetails(employee);
+        @PutMapping("/employees/{id}")
+        public ResponseEntity updateEmployeeDetails(@PathVariable("id")int id,@RequestBody EmployeePost employee){
+            return employeeService.updateEmployeeDetails(id,employee);
         }
 }

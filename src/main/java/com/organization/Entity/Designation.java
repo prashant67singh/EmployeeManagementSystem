@@ -34,7 +34,7 @@ public class Designation  {
     }
 
     public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle.toUpperCase();
+        this.jobTitle = jobTitle;
     }
 
     public Integer getLevelId() {

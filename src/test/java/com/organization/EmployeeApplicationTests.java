@@ -41,7 +41,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Autowired
     MockMvc mockMvc;
 
-    private String path = "/rest/employees";
+    private String path = "/employees";
 
     @Autowired
     EmployeeRepository employeeRepository;
@@ -51,8 +51,8 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         mockMvc.perform(get(path))
                 .andDo(print())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].empName").value("THOR"))
-                .andExpect(jsonPath("$[0].jobTitle").value("DIRECTOR"));
+                .andExpect(jsonPath("$[0].name").value("Thor"))
+                .andExpect(jsonPath("$[0].jobTitle").value("Director"));
     }
 
     // Test if getAllEmployee method returns  empty list
@@ -313,7 +313,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForValidEmployeeId() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(-2);
         employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Manager");
         employee.setManagerId(1);
@@ -322,39 +321,18 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",-2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
-
-    // Test updateEmployeeDetails() for checking Employee Id Passed is Null
-    @Test
-    public  void testUpdateEmployeeDetailsForNullEmployeeId() throws Exception{
-        EmployeePost employee = new EmployeePost();
-        // employee.setEmpId(2);
-        employee.setEmpName("Prashant Singh");
-        employee.setJobTitle("Manager");
-        employee.setManagerId(1);
-        employee.setReplace(true);
-        ObjectMapper objectMapper =new ObjectMapper();
-        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
-        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
-        String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
 
     // Test updateEmployeeDetails() for checking of Employee Id Passed is present in Table
     @Test
     public  void testUpdateEmployeeDetailsForEmployeeIdNotPresent() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(12);
         employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Manager");
         employee.setManagerId(1);
@@ -363,7 +341,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",20)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -373,7 +351,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceFalse() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(9);
         employee.setEmpName("Prashant Singh");
         employee.setJobTitle("DevOps");
         employee.setManagerId(4);
@@ -382,7 +359,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",9)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -393,7 +370,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceFalseInvalidJobTitle() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(5);
         employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Developers");
         //employee.setManagerId(4);
@@ -402,7 +378,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -413,8 +389,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceFalseJobTitleHighOrLow() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(5);
-        //employee.setEmpName("Prashant Singh");
+        employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Manager");
         //employee.setManagerId(4);
         employee.setReplace(false);
@@ -422,7 +397,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -432,7 +407,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceFalseInvalidManagerId() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(5);
         //employee.setEmpName("Prashant Singh");
         // employee.setJobTitle("Manager");
         employee.setManagerId(20);
@@ -441,7 +415,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -452,7 +426,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceFalseManagerIdWithSameOrLowerDesignation() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(5);
         //employee.setEmpName("Prashant Singh");
         // employee.setJobTitle("Manager");
         employee.setManagerId(6);
@@ -461,7 +434,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -473,7 +446,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceTrue() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(2);
         employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Manager");
         employee.setManagerId(1);
@@ -482,7 +454,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -494,7 +466,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceTrueEmpNameNull() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(2);
        // employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Manager");
         employee.setManagerId(1);
@@ -503,7 +474,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -514,7 +485,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceTrueJobTitleNull() throws Exception{
         EmployeePost employee = new EmployeePost();
-        employee.setEmpId(2);
         employee.setEmpName("Prashant Singh");
        // employee.setJobTitle("Manager");
         employee.setManagerId(1);
@@ -523,27 +493,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    // Test updateEmployeeDetails() for Replace=true and Employee Id = Null
-    @Test
-    public  void testUpdateEmployeeDetailsForReplaceTrueEmpIdNull() throws Exception{
-        EmployeePost employee = new EmployeePost();
-        //employee.setEmpId(2);
-        employee.setEmpName("Prashant Singh");
-        employee.setJobTitle("Manager");
-        employee.setManagerId(1);
-        employee.setReplace(true);
-        ObjectMapper objectMapper =new ObjectMapper();
-        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
-        ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
-        String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -554,7 +504,6 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceTrueDesignationHighLow() throws Exception{
         EmployeePost employee = new EmployeePost();
-       employee.setEmpId(2);
         employee.setEmpName("Prashant Singh");
         employee.setJobTitle("Developer");
         employee.setManagerId(1);
@@ -563,7 +512,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
         ObjectWriter objectWriter =objectMapper.writer().withDefaultPrettyPrinter();
         String requestJson=objectWriter.writeValueAsString(employee);
-        mockMvc.perform(put(path)
+        mockMvc.perform(put(path+"/{id}",2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())

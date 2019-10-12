@@ -1,6 +1,7 @@
 package com.organization.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
@@ -12,7 +13,9 @@ public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty("id")
     private Integer empId;
+    @JsonProperty("name")
     private String empName;
     @Transient
     public String jobTitle;  // It is used for fetching of Designation details when provided with jobTitle in POST REST API CALL
@@ -23,6 +26,7 @@ public class Employee {
     @JsonIgnore
     Designation designation;
     @Nullable
+    @JsonIgnore
     private Integer managerId;
 
     public Employee(String empName, String jobTitle, @Nullable Integer managerId) {
@@ -48,7 +52,7 @@ public class Employee {
     }
 
     public void setEmpName(String empName) {
-        this.empName = empName.toUpperCase();
+        this.empName = empName;
     }
 
     public Designation getDesignation() {
@@ -72,7 +76,7 @@ public class Employee {
     }
 
     public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle.toUpperCase();
+        this.jobTitle = jobTitle;
     }
 
 }

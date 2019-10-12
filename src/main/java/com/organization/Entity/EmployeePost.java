@@ -1,9 +1,13 @@
 package com.organization.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /* This class is Created to Solve the purpose of post Request*/
 public class EmployeePost {
 
+    @JsonProperty("name")
     public String empName;
+    @JsonProperty("id")
     public Integer empId;
     public Designation designation;
     public Integer managerId;
@@ -27,7 +31,7 @@ public class EmployeePost {
     }
 
     public void setEmpName(String empName) {
-        this.empName = empName.toUpperCase();
+        this.empName = empName;
     }
 
     public Integer getEmpId() {
@@ -58,7 +62,7 @@ public class EmployeePost {
         return jobTitle;
     }
 
-    public void setJobTitle(String jobTitle) {  this.jobTitle = jobTitle.toUpperCase();    }
+    public void setJobTitle(String jobTitle) {  this.jobTitle = jobTitle;    }
 
     public Boolean getReplace() {
         return replace;
