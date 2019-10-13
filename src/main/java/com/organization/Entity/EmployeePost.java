@@ -1,5 +1,6 @@
 package com.organization.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /* This class is Created to Solve the purpose of post Request*/

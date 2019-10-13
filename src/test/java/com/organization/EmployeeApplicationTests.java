@@ -94,7 +94,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     public void testGetEmployeeByForEmployeeIdNotPresent() throws Exception{
         mockMvc.perform(get(path+"/{id}",20))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     // Test deleteEmployeeById(int id) if id passed as argument is Valid or Not
@@ -110,7 +110,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     public void testDeleteEmployeeByIdForEmployeeIdNotPresent() throws Exception{
         mockMvc.perform(delete(path+"/{id}",20))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     // Test deleteEmployeeById(int id) along with its Response Status for Employee with no subordinates
@@ -126,7 +126,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     public void testDeleteEmployeeByIdWithSubordinates() throws Exception{
         mockMvc.perform(delete(path+"/{id}",3))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     //Test deleteEmployeeById(int id) for deleting Director with multiple Subordinates
@@ -162,7 +162,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     // Test addEmployee() for null Manager Id
@@ -170,7 +170,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     public void TestForAddEmployeeForNullManagerId() throws Exception{
         EmployeePost employee =new EmployeePost();
         employee.setEmpName("Prashant");
-//        employee.setManagerId(1);
+       employee.setManagerId(-1);
         employee.setJobTitle("Manager");
         ObjectMapper objectMapper =new ObjectMapper();
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
@@ -269,7 +269,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isBadRequest());
     }
 
     // Test addEmployee() , Adding first Employee in EMS with Null ManagerId
@@ -288,7 +288,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
     // Test addEmployee() , Adding first Employee in EMS with Some ManagerId
     @Test
@@ -466,7 +466,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
     @Test
     public  void testUpdateEmployeeDetailsForReplaceTrueEmpNameNull() throws Exception{
         EmployeePost employee = new EmployeePost();
-       // employee.setEmpName("Prashant Singh");
+        //employee.setEmpName("");
         employee.setJobTitle("Manager");
         employee.setManagerId(1);
         employee.setReplace(true);

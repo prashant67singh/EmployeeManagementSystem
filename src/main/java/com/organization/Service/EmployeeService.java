@@ -17,6 +17,8 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class EmployeeService {
@@ -51,10 +53,10 @@ public class EmployeeService {
             {
                 Employee employee = employeeTemp.get();
                 details.put("employee", employee);
-                if (employee.getManagerId() != null)  // Checking for Valid ManagerId
+                if (!(employee.getManagerId() == -1 || employee.getManagerId() == null))  // Checking for Valid ManagerId
                 {
                     Optional<Employee> managerDetails = employeeRepository.findById(employee.getManagerId()); // Getting Manager Details
-                    Employee managerValue =managerDetails.get();
+                    Employee managerValue = managerDetails.get();
                     details.put("manager", managerValue);
                 }
                 List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
@@ -84,7 +86,7 @@ public class EmployeeService {
             }
             else
             {
-                return new ResponseEntity("Given Employee Id Is Not Present",HttpStatus.BAD_REQUEST);
+                return new ResponseEntity("Given Employee Id Is Not Present",HttpStatus.NOT_FOUND);
             }
 
         }
@@ -130,10 +132,10 @@ public class EmployeeService {
                         }
                     }
                     employeeRepository.deleteById(id);
-                    return new ResponseEntity("Employee Is Successfully Deleted And Parent Details of His Subordinates Successfully Changed", HttpStatus.OK);
+                    return new ResponseEntity("Employee Is Successfully Deleted And Parent Details of His Subordinates Successfully Changed", HttpStatus.NO_CONTENT);
                 }
             } else {
-                return new ResponseEntity("Id Not Found", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity("Id Not Found", HttpStatus.NOT_FOUND);
             }
         }
         else
@@ -151,14 +153,22 @@ public class EmployeeService {
         if(employee.getEmpName() == null){                                                      // Checking if Employee Name is passed in Request Body or Not
             return new ResponseEntity("New Employee Name Cannot be Null",HttpStatus.BAD_REQUEST);
         }
+        Pattern p = Pattern.compile("^[ A-Za-z]+$");
+        Matcher m = p.matcher(employee.getEmpName());
+        boolean b = m.matches();
+        if(b == false)
+        {
+            return new ResponseEntity("Employee Name Format is not Valid",HttpStatus.BAD_REQUEST);
+        }
         Designation designation = designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())); // Fetching Details of Designation From JobTile
                                                                                                // Using WordUtils.Capitalize to Capitalize first Letter of word in String
         if (designation == null)                                                               // checking if JobTitle exist in Database or not
         {
             return new ResponseEntity("No Such Designation Exit For The Given JobTitle", HttpStatus.BAD_REQUEST);
         }
-
-        emp.setEmpId(employee.getEmpId());       // Setting Employee Id
+        List<Employee> employeeList= employeeRepository.findAll();
+        int j= employeeList.size()+1;
+        emp.setEmpId(j);       // Setting Employee Id
         emp.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));  // Setting Employee Name in Form "John Wick"
         emp.setDesignation(designation);       // Setting Employee Designation Details
         if(employeeRepository.findAll().size()!=0)
@@ -166,6 +176,9 @@ public class EmployeeService {
             if (employee.getManagerId() == null)                       // if There is director then new Employee Manager Id cannot be Null
             {
                 return new ResponseEntity("Manager Id Cannot Be Null", HttpStatus.BAD_REQUEST);
+            }
+            if (!employeeRepository.findById(employee.managerId).isPresent()){
+                return new ResponseEntity("Manager do not exist",HttpStatus.BAD_REQUEST);
             }
             emp.setManagerId(employee.getManagerId());
             int newEmployeeLevelId = emp.getDesignation().getLevelId();   //Finding LevelId of New Employee to be Inserted
@@ -182,7 +195,9 @@ public class EmployeeService {
             if (parentLevelId < newEmployeeLevelId)
             {
                 employeeRepository.save(emp);                         //Saving new Employee details in Employee Repository
-                return new ResponseEntity("New Employee Added", HttpStatus.OK);
+                ResponseEntity responseEntity =getEmployee(j);
+                System.out.print(emp);
+                return new ResponseEntity(responseEntity.getBody(), HttpStatus.CREATED);
             }
             else if (newEmployeeLevelId == 1)
             {
@@ -190,16 +205,16 @@ public class EmployeeService {
             }
             else
                 {
-                return new ResponseEntity("New Employee Cannot Be Added Due To Same Designation Post", HttpStatus.FORBIDDEN);
+                return new ResponseEntity("New Employee Cannot Be Added Due To Same Designation Post", HttpStatus.BAD_REQUEST);
             }
         }
         else
         {
-                if(employee.getManagerId()==null)
+                if(employee.getManagerId()==-1 || employee.getManagerId()==null)
                 {
-                    emp.setManagerId(null);                       // Manager Id In Case Of Very First employee can be null
+                    emp.setManagerId(-1);                       // Manager Id In Case Of Very First employee can be null
                     employeeRepository.save(emp);                 // Saving The Employee Details in Repository
-                    return new ResponseEntity("Very First Employee In EMS is Added", HttpStatus.OK);
+                    return new ResponseEntity("Very First Employee In EMS is Added", HttpStatus.CREATED);
 
                 }
                 else
@@ -236,7 +251,15 @@ public class EmployeeService {
         if(employee.getReplace() == false) // Updating the Details of employee with given Changes
         {
             if(employee.getEmpName()!=null) {
-                employeeDetails.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));  //Setting Employee Name To New Name as Requested
+                Pattern p = Pattern.compile("^[ A-Za-z]+$");
+                Matcher m = p.matcher(employee.getEmpName());
+                boolean b = m.matches();
+                if(b==true){
+                    employeeDetails.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));  //Setting Employee Name To New Name as Requested
+                }
+                else{
+                    return new ResponseEntity("Employee Name is not in Correct Format",HttpStatus.BAD_REQUEST);
+                }
             }
             else
             {
@@ -245,6 +268,9 @@ public class EmployeeService {
             }
             if(employee.getJobTitle()!=null)
             {
+                if(employeeDetails.getJobTitle().equals("Director")){
+                    return new ResponseEntity("Director Designation Cannot be Updated",HttpStatus.BAD_REQUEST);
+                }
                 Designation designation = designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())); // fetching designation Details From Passed new job Title after setting job Title to DB format
                 if(designation==null){                                                                   // if Job Title Exit or not
                     return new ResponseEntity("Such Designation Do not Exit",HttpStatus.BAD_REQUEST);
@@ -305,8 +331,16 @@ public class EmployeeService {
               {
                   return new ResponseEntity("JobTitle Cannot be Null",HttpStatus.BAD_REQUEST);
               }
-              if(employee.getEmpName()==null){
-                  return new ResponseEntity("Employee Name Cannot Be Null",HttpStatus.BAD_REQUEST);
+              if(employee.getEmpName()!=null) {
+                  Pattern p = Pattern.compile("^[ A-Za-z]+$");
+                  Matcher m = p.matcher(employee.getEmpName());
+                  boolean b = m.matches();
+                  if (b == false) {
+                      return new ResponseEntity("Employee Name Is not in Correct Format", HttpStatus.BAD_REQUEST);
+                  }
+              }
+              else{
+                  return  new ResponseEntity("Employee Name Cannot be Empty or Null",HttpStatus.BAD_REQUEST);
               }
               int oldLevelId=employeeDetails.getDesignation().getLevelId();
               int newLevelId=designation.getLevelId();
@@ -315,6 +349,9 @@ public class EmployeeService {
                   newEmployee.setEmpId(employeeList.size()+1);
                   newEmployee.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));
                   newEmployee.setDesignation(designation);
+                  if(employee.getManagerId()==-1){
+                      return  new ResponseEntity("Cannot be Updated",HttpStatus.BAD_REQUEST);
+                  }
                   newEmployee.setManagerId(employeeDetails.getManagerId());
                   employeeRepository.save(newEmployee);
                // Conditions for changing the ManagerId of Subordinates
