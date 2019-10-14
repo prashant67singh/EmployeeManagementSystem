@@ -28,11 +28,12 @@ public class EmployeeService {
     @Autowired
     DesignationRepository designationRepository;
 
-    /*Method to get all Employees in database*/
+    /*-----------------------Method to get all Employees in database-------------------------------*/
     public ResponseEntity getAllEmployee()
     {
         List<Employee> employeeList=employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc(); // Finding details of all Employee sorted by LevelId, EmployeeName
-        if (employeeList.size() > 0){
+        if (employeeList.size() > 0)
+        {
             return new ResponseEntity(employeeList,HttpStatus.OK);  // Returning Non Empty List
         }
         else
@@ -61,9 +62,11 @@ public class EmployeeService {
                 }
                 List<Employee> employeeList = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
                 List<Employee> colleague = new ArrayList<>(); // Creating List to get Colleague details
-                for (int i = 0; i < employeeList.size(); i++) {
+                for (int i = 0; i < employeeList.size(); i++)
+                {
                     // Condition to get Colleague details
-                    if (employeeList.get(i).getManagerId() == employee.getManagerId() && employee.getEmpId() != employeeList.get(i).getEmpId()) {
+                    if (employeeList.get(i).getManagerId() == employee.getManagerId() && employee.getEmpId() != employeeList.get(i).getEmpId())
+                    {
                         colleague.add(employeeList.get(i));
                     }
                 }
@@ -72,7 +75,8 @@ public class EmployeeService {
                     details.put("colleagues", colleague);
                 }
                 List<Employee> subordinate = new ArrayList<>(); // Creation of List to get Subordinate Details
-                for (int i = 0; i < employeeList.size(); i++) {
+                for (int i = 0; i < employeeList.size(); i++)
+                {
                     if (employeeList.get(i).getManagerId() == employee.getEmpId()) // Condition for getting Subordinate details
                     {
                         subordinate.add(employeeList.get(i));
@@ -96,10 +100,11 @@ public class EmployeeService {
         }
     }
 
-/*Method to delete an employee from table provided with employee id */
+/*--------------------------Method to delete an employee from table provided with employee id -------------*/
     public ResponseEntity deleteEmployeeById(int id)
     {
-        if(id>0) {
+        if(id>0) // Checking For Correct Id Type
+        {
             Optional<Employee> employeeDetails = employeeRepository.findById(id);
             if (employeeDetails.isPresent()) {
                 List<Employee> employeeList = employeeRepository.findAll();
@@ -144,19 +149,21 @@ public class EmployeeService {
         }
     }
 
-/* Method to add new employee */
+/* ------------------------Method to add new employee (POST) ----------------------------------*/
     public ResponseEntity addEmployee(EmployeePost employee) {
         Employee emp = new Employee();                                                            // Creating New Employee Object
-        if (employee.getJobTitle() == null){                                                     // Checking If Employee Job Title is Passed in Request Body or Not
+        if (employee.getJobTitle() == null)                    // Checking If Employee Job Title is Passed in Request Body or Not
+        {
             return new ResponseEntity("JobTitle Cannot be Null",HttpStatus.BAD_REQUEST);
         }
-        if(employee.getEmpName() == null){                                                      // Checking if Employee Name is passed in Request Body or Not
+        if(employee.getEmpName() == null)                     // Checking if Employee Name is passed in Request Body or Not
+        {
             return new ResponseEntity("New Employee Name Cannot be Null",HttpStatus.BAD_REQUEST);
         }
-        Pattern p = Pattern.compile("^[ A-Za-z]+$");
-        Matcher m = p.matcher(employee.getEmpName());
+        Pattern p = Pattern.compile("^[ A-Za-z]+$");         // Regex t check Employee Name Format
+        Matcher m = p.matcher(employee.getEmpName());        // Matching New Employee Name With Regex
         boolean b = m.matches();
-        if(b == false)
+        if(b == false)                                      // Determining if Name Is In correct Format
         {
             return new ResponseEntity("Employee Name Format is not Valid",HttpStatus.BAD_REQUEST);
         }
@@ -223,23 +230,23 @@ public class EmployeeService {
                 }
         }
     }
-
-    /* Method to Update an Employee Details*/
+ /*---------------------- Method to Update an Employee Details (PUT) ---------------------------------------*/
     public ResponseEntity updateEmployeeDetails(int id,EmployeePost employee)
     {
+        if((employee.getEmpName()==null&&employee.jobTitle==null&&employee.getManagerId()==null)||(employee.getEmpName()==""&&employee.jobTitle==""&&employee.getManagerId()==null)) // Checking If Request Body is Null
+        {
+            return new ResponseEntity("No Response Body",HttpStatus.BAD_REQUEST);
+        }
         Employee employeeDetails = new Employee();
         List<Employee> employeeList= employeeRepository.findAll();
-//        if(employee.getEmpId() == null)
-//        {
-//            return  new ResponseEntity("Employee Id Cannot Be null",HttpStatus.BAD_REQUEST);
-//        }
-        if(id > 0) {
+        if(id > 0)                               // Checking for Valid Employee Id
+        {
             for (int i = 0; i < employeeList.size(); i++) {
                 if (employeeList.get(i).getEmpId() == id) {
                     employeeDetails = employeeList.get(i);                      // Getting Employee Details after getting EmpId Passed in json body
                 }
             }
-            if(employeeDetails.getEmpId() == null)
+            if(employeeDetails.getEmpId() == null)                        // Finding If Employee For Given Id is Present or Not
             {
                 return new ResponseEntity("Employee Details Not Present For Given Employee Id",HttpStatus.BAD_REQUEST);
             }
@@ -248,14 +255,14 @@ public class EmployeeService {
         {
             return new ResponseEntity("Invalid Employee Id Is Passed",HttpStatus.BAD_REQUEST);
         }
-        if(employee.getReplace() == false) // Updating the Details of employee with given Changes
+        if(employee.getReplace()==false) // Updating the Details of employee with given Changes
         {
             if(employee.getEmpName()!=null) {
-                Pattern p = Pattern.compile("^[ A-Za-z]+$");
-                Matcher m = p.matcher(employee.getEmpName());
+                Pattern p = Pattern.compile("^[ A-Za-z]+$");            // Regex t check Employee Name Format
+                Matcher m = p.matcher(employee.getEmpName());           // Matching New Employee Name With Regex
                 boolean b = m.matches();
                 if(b==true){
-                    employeeDetails.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));  //Setting Employee Name To New Name as Requested
+                    employeeDetails.setEmpName(WordUtils.capitalize(employee.getEmpName()));  //Setting Employee Name To New Name as Requested
                 }
                 else{
                     return new ResponseEntity("Employee Name is not in Correct Format",HttpStatus.BAD_REQUEST);
@@ -266,29 +273,49 @@ public class EmployeeService {
                 employeeDetails.setEmpName(employeeDetails.getEmpName());   // If New Name is Not provide Name is set to previous name
                 employeeRepository.save(employeeDetails);
             }
-            if(employee.getJobTitle()!=null)
-            {
-                if(employeeDetails.getJobTitle().equals("Director")){
-                    return new ResponseEntity("Director Designation Cannot be Updated",HttpStatus.BAD_REQUEST);
+            if(employee.getJobTitle()!=null) {
+                if (employeeDetails.getJobTitle().equals("Director")) {
+                    return new ResponseEntity("Director Designation Cannot be Updated", HttpStatus.BAD_REQUEST);
                 }
                 Designation designation = designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())); // fetching designation Details From Passed new job Title after setting job Title to DB format
-                if(designation==null){                                                                   // if Job Title Exit or not
-                    return new ResponseEntity("Such Designation Do not Exit",HttpStatus.BAD_REQUEST);
+                if (designation == null) {                                                                   // if Job Title Exit or not
+                    return new ResponseEntity("Such Designation Do not Exit", HttpStatus.BAD_REQUEST);
                 }
                 int newLevelId = designation.getLevelId();
                 Optional<Employee> manager = employeeRepository.findById(employeeDetails.getManagerId());             // Getting Manager Details
                 int parentLevelId = manager.get().getDesignation().getLevelId();
-                int currentLevelId = employeeDetails.getDesignation().getLevelId();
-                if((newLevelId>parentLevelId)&&(newLevelId<=currentLevelId))                                         //Comparing the New level Id with Employee Manager Id and his current level id
-                {                                                                                                   // Assumption Employee Cannot given Lower designation
-                    employeeDetails.setDesignation(designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())));  // Setting The New Designation for Employee
-                    employeeDetails.setJobTitle(employee.getJobTitle());
-                    employeeRepository.save(employeeDetails);
-
+//                int currentLevelId = employeeDetails.getDesignation().getLevelId();
+                List<Employee> subordinate = new ArrayList<>();
+                List<Employee> employeeListForSubordinates = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
+                for (int i = 0; i < employeeListForSubordinates.size(); i++) {
+                    if (employeeListForSubordinates.get(i).getManagerId() == employeeDetails.getEmpId())               //Getting Subordinated of Employee in Order to Determine Till where Employee Designation can be Degraded
+                    {
+                        subordinate.add(employeeListForSubordinates.get(i));
+                    }
                 }
-                else
-                {
-                    return new ResponseEntity("Level Id Must Not Greater then His Manager Level Id And Lower Then His Current Level Id",HttpStatus.BAD_REQUEST);
+                if (subordinate.isEmpty()) {                                                             //If Emloyee Has No Subordinates Then designation can Be Degraded to lowest Designation
+                    if ((newLevelId > parentLevelId)) {
+                        employeeDetails.setDesignation(designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())));  // Setting The New Designation for Employee
+                        employeeDetails.setJobTitle(WordUtils.capitalize(employee.getJobTitle()));
+                        employeeRepository.save(employeeDetails);
+                    }
+                    else
+                    {
+                        return new ResponseEntity("Level Id Must Not Greater then His Manager Level Id And Lower Then His subordinate Level Id",HttpStatus.BAD_REQUEST);
+                    }
+                }
+                else                                       //If Emloyee Has Subordinates Then designation can Be Degraded till designation higher then his Subordinate With Highest Designation
+                    {
+                    int permittedLevelId=subordinate.get(0).getDesignation().getLevelId();
+                    if ((newLevelId > parentLevelId) && (newLevelId < permittedLevelId))                                         //Comparing the New level Id with Employee Manager Id and his current level id
+                    {                                                                                                   // Assumption Employee Cannot given Lower designation
+                        employeeDetails.setDesignation(designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())));  // Setting The New Designation for Employee
+                        employeeDetails.setJobTitle(WordUtils.capitalize(employee.getJobTitle()));
+                        employeeRepository.save(employeeDetails);
+
+                    } else {
+                        return new ResponseEntity("Level Id Must Not Greater then His Manager Level Id And Lower Then His subordinate Level Id", HttpStatus.BAD_REQUEST);
+                    }
                 }
             }
             else {
@@ -305,8 +332,8 @@ public class EmployeeService {
                 Designation designation = designationRepository.findByJobTitle(managerDetails.get().getJobTitle());
                 int managerLevelId = designation.getLevelId();
                 int employeeLevelId = employeeDetails.getDesignation().getLevelId();
-                if (managerLevelId < employeeLevelId)
-                {                                  // Matching Designation Details Of New Manager and Employee
+                if (managerLevelId < employeeLevelId)   // Matching Designation Details Of New Manager and Employee
+                {
                     employeeDetails.setManagerId(employee.getManagerId());
                     employeeRepository.save(employeeDetails);
                 }
@@ -349,13 +376,14 @@ public class EmployeeService {
                   newEmployee.setEmpId(employeeList.size()+1);
                   newEmployee.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));
                   newEmployee.setDesignation(designation);
-                  if(employee.getManagerId()==-1){
-                      return  new ResponseEntity("Cannot be Updated",HttpStatus.BAD_REQUEST);
+                  if(employee.getManagerId() == null) {
+                      newEmployee.setManagerId(employeeDetails.getManagerId());
                   }
-                  newEmployee.setManagerId(employeeDetails.getManagerId());
+                  else{
+                      newEmployee.setManagerId(employee.getManagerId());
+                  }
                   employeeRepository.save(newEmployee);
-               // Conditions for changing the ManagerId of Subordinates
-                  List<Employee> subordinateList =new ArrayList<>();
+                  List<Employee> subordinateList =new ArrayList<>();     // Conditions for changing the ManagerId of Subordinates
                   for(int i=0; i<employeeList.size();i++)
                   {
                       if(employeeList.get(i).getManagerId() == employeeDetails.getEmpId()){

@@ -21,7 +21,7 @@ public class EmployeePost {
         this.replace = replace;
     }
 
-    public Boolean replace;
+    public Boolean replace = false;
 
     public EmployeePost() {
 
