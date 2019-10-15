@@ -304,7 +304,7 @@ public class EmployeeService {
                         return new ResponseEntity("Level Id Must Not Greater then His Manager Level Id And Lower Then His subordinate Level Id",HttpStatus.BAD_REQUEST);
                     }
                 }
-                else                                       //If Emloyee Has Subordinates Then designation can Be Degraded till designation higher then his Subordinate With Highest Designation
+                else
                     {
                     int permittedLevelId=subordinate.get(0).getDesignation().getLevelId();
                     if ((newLevelId > parentLevelId) && (newLevelId < permittedLevelId))                                         //Comparing the New level Id with Employee Manager Id and his current level id
@@ -350,7 +350,7 @@ public class EmployeeService {
             ResponseEntity responseEntity=getEmployee(employeeDetails.getEmpId()); // Creating New Object of Type ResponseEntity to fetch the details of newly Added Employ
             return new ResponseEntity(responseEntity.getBody(),HttpStatus.OK);     // Returning only body part of ResponseEntity object
         }
-        else if (employee.getReplace() == true)                                                                         // Replacing the Old Employee with New Employee
+        else    // Replacing the Old Employee with New Employee
             {
               Employee newEmployee= new Employee();
               Designation designation = designationRepository.findByJobTitle(WordUtils.capitalize(employee.getJobTitle())); // fetching designation Details From Passed new job Title after setting job Title to DB format
@@ -369,44 +369,77 @@ public class EmployeeService {
               else{
                   return  new ResponseEntity("Employee Name Cannot be Empty or Null",HttpStatus.BAD_REQUEST);
               }
-              int oldLevelId=employeeDetails.getDesignation().getLevelId();
-              int newLevelId=designation.getLevelId();
-              if(newLevelId == oldLevelId)
-              {
-                  newEmployee.setEmpId(employeeList.size()+1);
-                  newEmployee.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));
-                  newEmployee.setDesignation(designation);
-                  if(employee.getManagerId() == null) {
-                      newEmployee.setManagerId(employeeDetails.getManagerId());
-                  }
-                  else{
-                      newEmployee.setManagerId(employee.getManagerId());
-                  }
-                  employeeRepository.save(newEmployee);
-                  List<Employee> subordinateList =new ArrayList<>();     // Conditions for changing the ManagerId of Subordinates
-                  for(int i=0; i<employeeList.size();i++)
-                  {
-                      if(employeeList.get(i).getManagerId() == employeeDetails.getEmpId()){
-                          subordinateList.add(employeeList.get(i));
+             int newLevelId1=designation.getLevelId(); // Employee Level Id
+              Optional<Employee> manager= employeeRepository.findById(employeeDetails.getManagerId());
+              int managerLevelId = manager.get().getDesignation().getLevelId();
+              List<Employee> subordinate = new ArrayList<>();
+              List<Employee> employeeListForSubordinates = employeeRepository.findAllByOrderByDesignation_LevelIdAscEmpNameAsc();
+              for (int i = 0; i < employeeListForSubordinates.size(); i++) {
+                    if (employeeListForSubordinates.get(i).getManagerId() == employeeDetails.getEmpId())               //Getting Subordinated of Employee in Order to Determine Till where Employee Designation can be Degraded
+                    {
+                        subordinate.add(employeeListForSubordinates.get(i));
+                    }
+                }
+              int permittedLevelId=subordinate.get(0).getDesignation().getLevelId();
+              if(!subordinate.isEmpty()) {
+                      if (newLevelId1 > managerLevelId && newLevelId1 < permittedLevelId + 1) {
+                      newEmployee.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));
+                      newEmployee.setDesignation(designation);
+                      if (employee.getManagerId() != null) {
+                          newEmployee.setManagerId(employee.getManagerId());
+                      } else {
+                          newEmployee.setManagerId(employeeDetails.getManagerId());
                       }
+                      employeeRepository.save(newEmployee);
+                      List<Employee> subordinateList = new ArrayList<>();     // Conditions for changing the ManagerId of Subordinates
+                      for (int i = 0; i < employeeList.size(); i++) {
+                          if (employeeList.get(i).getManagerId() == employeeDetails.getEmpId()) {
+                              subordinateList.add(employeeList.get(i));
+                          }
+                      }
+                      for (int i = 0; i < subordinateList.size(); i++) {
+                          subordinateList.get(i).setManagerId(newEmployee.getEmpId());
+                          employeeRepository.save(subordinateList.get(i));
+                      }
+
+                      employeeRepository.deleteById(employeeDetails.getEmpId()); // Deleting the old Employee
+                      ResponseEntity responseEntity = getEmployee(newEmployee.getEmpId());
+                      return new ResponseEntity(responseEntity.getBody(), HttpStatus.OK);
+                  } else {
+                         return new ResponseEntity("Designation Not Valid It Is either Higher Or Lower, So Employee Cannot Be Added", HttpStatus.BAD_REQUEST);
                   }
-                  for(int i=0;i<subordinateList.size();i++)
-                  {
-                      subordinateList.get(i).setManagerId(newEmployee.getEmpId());
-                      employeeRepository.save(subordinateList.get(i));
-                  }
-                  employeeRepository.deleteById(employeeDetails.getEmpId()); // Deleting the old Employee
-                  ResponseEntity  responseEntity =getEmployee(newEmployee.getEmpId());
-                  return new ResponseEntity(responseEntity.getBody(),HttpStatus.OK);
               }
               else
-              {
-                  return new ResponseEntity("Designation Not Same, So Employee Cannot Be Added",HttpStatus.BAD_REQUEST);
+               {
+                  if (newLevelId1 > managerLevelId)
+                  {
+                      newEmployee.setEmpName(WordUtils.capitalize(employee.getEmpName().toLowerCase()));
+                      newEmployee.setDesignation(designation);
+                      if (employee.getManagerId() != null){
+                          newEmployee.setManagerId(employee.getManagerId());
+                      }
+                      else {
+                          newEmployee.setManagerId(employeeDetails.getManagerId());
+                      }
+                      employeeRepository.save(newEmployee);
+                      List<Employee> subordinateList = new ArrayList<>();     // Conditions for changing the ManagerId of Subordinates
+                      for (int i = 0; i < employeeList.size(); i++) {
+                          if (employeeList.get(i).getManagerId() == employeeDetails.getEmpId()) {
+                              subordinateList.add(employeeList.get(i));
+                          }
+                      }
+                      for (int i = 0; i < subordinateList.size(); i++) {
+                          subordinateList.get(i).setManagerId(newEmployee.getEmpId());
+                          employeeRepository.save(subordinateList.get(i));
+                      }
+                      employeeRepository.deleteById(employeeDetails.getEmpId()); // Deleting the old Employee
+                      ResponseEntity responseEntity = getEmployee(newEmployee.getEmpId());
+                      return new ResponseEntity(responseEntity.getBody(), HttpStatus.OK);
+                  }
+                  else {
+                      return new ResponseEntity("Designation Not Valid It Is either Higher then its Manader Designation, So Employee Cannot Be Added", HttpStatus.BAD_REQUEST);
+                  }
               }
-        }
-        else
-        {
-            return  new ResponseEntity(" Bad Request "+ employee.getReplace(),HttpStatus.BAD_REQUEST);
         }
     }
 }
