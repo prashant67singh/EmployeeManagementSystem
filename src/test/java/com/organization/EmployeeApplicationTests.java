@@ -516,7 +516,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
     }
 
 
