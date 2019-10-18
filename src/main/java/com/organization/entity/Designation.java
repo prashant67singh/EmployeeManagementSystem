@@ -1,4 +1,4 @@
-package com.organization.Entity;
+package com.organization.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
@@ -9,8 +9,8 @@ import javax.persistence.*;
 @JsonIgnoreType
 public class Designation  {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id                                               // Declaring Primary Key
+    @GeneratedValue(strategy = GenerationType.IDENTITY)   // For Generating Id Automatically
     @JsonIgnore
     private Integer designationId;
     @JsonIgnore

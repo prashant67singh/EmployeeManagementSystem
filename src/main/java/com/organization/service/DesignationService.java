@@ -1,6 +1,6 @@
-package com.organization.Service;
+package com.organization.service;
 
-import com.organization.Repository.DesignationRepository;
+import com.organization.repository.DesignationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

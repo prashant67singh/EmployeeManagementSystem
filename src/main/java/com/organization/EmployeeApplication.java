@@ -19,14 +19,14 @@ import java.util.Collection;
 import java.util.Collections;
 
 @SpringBootApplication
-@EnableSwagger2
+@EnableSwagger2                            // Enabling Swagger Annotations
 public class EmployeeApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EmployeeApplication.class, args);
 	}
 	@Bean
-	public Docket swaggerConfiguration(){
+	public Docket swaggerConfiguration(){                    // Configuring Swagger
 
 		return  new Docket(DocumentationType.SWAGGER_2)
 				.select()
@@ -35,7 +35,7 @@ public class EmployeeApplication extends SpringBootServletInitializer {
 				.apiInfo(apiDetails());
 	}
 
-	private ApiInfo apiDetails(){
+	private ApiInfo apiDetails(){                           // Function For Providing Custom Configuration to Swagger
 		return  new ApiInfo(
 				"Employee Management System API",
 				"All REST API Present In EMS",

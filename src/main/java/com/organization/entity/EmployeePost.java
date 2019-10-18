@@ -1,14 +1,13 @@
-package com.organization.Entity;
+package com.organization.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/* This class is Created to Solve the purpose of post Request*/
+/* This class is Created to Solve the purpose of POST and PUT Request i.e for fetching data from Request Body*/
 public class EmployeePost {
 
-    @JsonProperty("name")
+    @JsonProperty("name")                   // Providing Alias Name
     public String empName;
-    @JsonProperty("id")
+    @JsonProperty("id")                    // Providing Alias Name
     public Integer empId;
     public Designation designation;
     public Integer managerId;

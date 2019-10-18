@@ -1,16 +1,10 @@
-package com.organization.Controller;
+package com.organization.controller;
 
-import com.organization.Entity.Employee;
-import com.organization.Entity.EmployeePost;
-import com.organization.Repository.EmployeeRepository;
-import com.organization.Service.EmployeeService;
+import com.organization.entity.EmployeePost;
+import com.organization.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 public class  EmployeeController {

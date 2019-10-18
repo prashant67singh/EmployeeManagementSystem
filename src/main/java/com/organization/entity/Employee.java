@@ -1,4 +1,4 @@
-package com.organization.Entity;
+package com.organization.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,21 +11,21 @@ import javax.persistence.*;
 public class Employee {
 
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonProperty("id")
+    @Id                                               // Declaring Primary Key
+    @GeneratedValue(strategy = GenerationType.IDENTITY)   // For generating Id Automatically
+    @JsonProperty("id")                              // Providing Alias Name
     private Integer empId;
-    @JsonProperty("name")
+    @JsonProperty("name")                           //Providing Alias Name
     private String empName;
     @Transient
-    public String jobTitle;  // It is used for fetching of Designation details when provided with jobTitle in POST REST API CALL
+    public String jobTitle;  // It is used for fetching of Designation details when provided with jobTitle in POST and PUT REST API CALL and it is virtually present in table
 
 
-    @OneToOne
+    @OneToOne                                  // Joining Employee and Designation Table
     @JoinColumn
-    @JsonIgnore
+    @JsonIgnore                               // For Ignoring Designation in JSON output
     Designation designation;
-    @Nullable
+    @Nullable                                // Permitting NUll values in Column
     @JsonIgnore
     private Integer managerId;
 
