@@ -267,7 +267,7 @@ public class EmployeeApplicationTests extends AbstractTransactionalTestNGSpringC
         employeeRepository.deleteAll();
         EmployeePost employee =new EmployeePost();
         employee.setEmpName("Prashant");
-      //  employee.setManagerId(2);
+        employee.setManagerId(-1);
         employee.setJobTitle("Manager");
         ObjectMapper objectMapper =new ObjectMapper();
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE,false);
